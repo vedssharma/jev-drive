@@ -1,4 +1,4 @@
-"""Local-only browser simulator. Credentials and model calls stay on the server."""
+"""Browser simulator with explicit host validation. Credentials and model calls stay on the server."""
 
 import asyncio
 import os
@@ -215,11 +215,20 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Jev Drive", lifespan=lifespan, docs_url=None, redoc_url=None)
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
+def allowed_hosts():
+    hosts = {"127.0.0.1", "localhost", "testserver"}
+    for name in ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+        if value := os.getenv(name):
+            hosts.add(value.strip())
+    hosts.update(host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip())
+    return sorted(hosts)
+
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts())
 
 
 @app.middleware("http")
-async def local_only(request: Request, call_next):
+async def request_boundaries(request: Request, call_next):
     if request.method == "POST":
         if request.headers.get("origin", str(request.base_url).rstrip("/")) != str(request.base_url).rstrip("/"):
             return JSONResponse({"detail": "Cross-origin requests are not allowed."}, status_code=403)

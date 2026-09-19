@@ -77,9 +77,14 @@ their interactions are simplified. The observation and physics are browser-owned
 The model can make mistakes, and the brake assist is not a guarantee of avoiding
 collisions. Disable it to inspect unassisted model braking decisions.
 
-The backend is deliberately local-only with host/origin checks, observation size
-limits and strict schema validation. It has no multi-user authentication and
-should not be exposed publicly as-is.
+The backend validates hosts and same-origin requests, limits observation size,
+and uses strict schemas. Vercel deployment, branch, and production domains are
+allowed from system environment variables. Set `ALLOWED_HOSTS` for additional
+aliases or custom domains. This is a demo without per-user authentication or
+usage quotas; visitors use the configured server-side TypeSafe account.
+
+On Vercel, the configured build script installs Three.js. Set `TYPESAFE_API_KEY`
+in the Vercel project environment; it stays on the server.
 
 ## Validation
 

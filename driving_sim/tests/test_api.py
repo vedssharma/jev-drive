@@ -69,3 +69,28 @@ def test_choices_and_failures(monkeypatch):
         result = c.post("/api/decide", json=observation())
         assert result.status_code == 502
         assert "secret" not in result.text
+
+
+def test_deployment_hosts(monkeypatch):
+    from fastapi import FastAPI
+    from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+    from driving_sim.app import allowed_hosts
+
+    monkeypatch.setenv("VERCEL_URL", "jev-drive-build.vercel.app")
+    monkeypatch.setenv("VERCEL_BRANCH_URL", "jev-drive-git-main.vercel.app")
+    monkeypatch.setenv("VERCEL_PROJECT_PRODUCTION_URL", "jev-drive.vercel.app")
+    monkeypatch.setenv("ALLOWED_HOSTS", " drive.example.com, team-alias.vercel.app ")
+    deployed = FastAPI()
+    deployed.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts())
+
+    @deployed.get("/")
+    def home():
+        return {"ok": True}
+
+    with TestClient(deployed) as c:
+        for host in ["localhost", "jev-drive.vercel.app", "jev-drive-build.vercel.app",
+                     "jev-drive-git-main.vercel.app", "drive.example.com", "team-alias.vercel.app"]:
+            assert c.get("/", headers={"Host": host}).status_code == 200
+        for host in ["unrelated.vercel.app", "attacker.example", "jev-drive.vercel.app.attacker.example"]:
+            assert c.get("/", headers={"Host": host}).status_code == 400
