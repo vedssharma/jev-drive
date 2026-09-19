@@ -1,4 +1,4 @@
-"""Install browser dependencies and publish them through Vercel's static CDN."""
+"""Install browser dependencies and publish them through the deployed FastAPI app."""
 
 import shutil
 import subprocess
@@ -8,7 +8,7 @@ from pathlib import Path
 def main():
     root = Path(__file__).resolve().parent
     subprocess.run(["npm", "--prefix", "driving_sim", "ci"], cwd=root, check=True)
-    shutil.copytree(root / "driving_sim/node_modules/three/build", root / "public/vendor",
+    shutil.copytree(root / "driving_sim/node_modules/three/build", root / "driving_sim/vendor",
                     dirs_exist_ok=True)
 
 

@@ -277,4 +277,6 @@ def index():
 
 
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
-app.mount("/vendor", StaticFiles(directory=ROOT / "node_modules/three/build", check_dir=False), name="vendor")
+# node_modules is excluded from Python function bundles; build.py copies the runtime assets.
+vendor = ROOT / "vendor" if (ROOT / "vendor").is_dir() else ROOT / "node_modules/three/build"
+app.mount("/vendor", StaticFiles(directory=vendor, check_dir=False), name="vendor")
