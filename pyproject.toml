@@ -15,7 +15,7 @@ pythonpath = ["."]
 entrypoint = "driving_sim.app:app"
 
 [tool.vercel.scripts]
-build = "npm --prefix driving_sim ci"
+build = "python build.py"
 
 [tool.ruff]
 line-length = 100
