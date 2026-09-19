@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jev Drive — Autonomous driving lab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23152123'/%3E%3Cpath d='M11 6v14q0 6 10 3V6M16 8v4m0 5v4' fill='none' stroke='%2399eccb' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Jev Drive home"><span class="brand-mark">j<span>↗</span></span><strong>jev<span>drive</span></strong><span class="divider"></span><span class="lab">AUTONOMOUS DRIVING LAB</span></a>
+    <div class="connection"><span id="connection-dot" class="dot"></span><span id="connection">Connecting to Jev</span><button id="info-button" class="icon-button" aria-label="About this simulator">?</button></div>
+  </header>
+  <main>
+    <section class="world" aria-label="Driving simulation">
+      <div id="scene"></div>
+      <div class="scene-heading"><div class="eyebrow">LIVE ENVIRONMENT <span>/ 01</span></div><h1>A little city.<br>A thousand decisions.</h1><p id="place">Northbound on Linden Avenue</p></div>
+      <div class="world-top-right"><span class="weather-pill" id="weather-pill">☀ Clear skies · 50 km/h limit</span><button id="camera" class="glass-button">◈ <span>Orbit view</span> <kbd>C</kbd></button></div>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <div class="road-label"><span class="car-dot"></span> JEV–01 <span id="car-state">READY</span></div>
+      <div class="mini-map"><canvas id="route-map" width="360" height="240" aria-label="Street grid and driven route"></canvas><span id="map-caption">Jev is choosing a route</span></div>
+      <div class="telemetry">
+        <div class="speed"><span id="speed">0</span><span class="speed-unit">km/h</span><span id="speed-bar"></span></div>
+        <div class="telemetry-data"><label>TARGET</label><strong><span id="target">0</span> <small>km/h</small></strong></div>
+        <div class="telemetry-data"><label>DISTANCE</label><strong id="distance">0 <small>m</small></strong></div>
+        <div class="telemetry-data"><label>NEXT SIGNAL</label><strong><i id="signal-dot" class="signal-dot green"></i><span id="signal-distance">84 m</span></strong></div>
+        <div class="telemetry-data grip"><label>ROAD GRIP</label><strong id="grip">100<small>%</small></strong></div>
+      </div>
+      <div class="world-footer"><span><i></i> Jev decisions · simulated physics</span><span id="fps">60 FPS</span></div>
+      <div id="loading" class="loading">Building your neighborhood…</div>
+    </section>
+    <aside class="panel">
+      <section class="drive-controls">
+        <div class="section-title"><h2>Your test drive</h2><span class="tag">SANDBOX</span></div>
+        <p>Change the conditions. Watch Jev adapt.</p>
+        <div class="primary-actions"><button id="start" class="primary" disabled>▶ Start driving <kbd>SPACE</kbd></button><button id="reset" class="reset" aria-label="Reset simulation" title="Reset simulation">↺</button></div>
+      </section>
+      <section class="navigation-section">
+        <div class="section-title"><h2>Explore the city</h2><span class="tag" id="turn-count">0 TURNS</span></div>
+        <label class="field-label" for="route-preference">Next available junction</label>
+        <select id="route-preference"><option value="auto">Let Jev explore</option><option value="left">Ask Jev to turn left</option><option value="right">Ask Jev to turn right</option><option value="straight">Ask Jev to go straight</option></select>
+        <div class="route-summary"><strong id="route-action">Choosing a route</strong><span id="route-street">Linden Avenue</span></div>
+        <p id="passing-status">Keep right · pass when clear</p>
+      </section>
+      <section class="conditions">
+        <div class="section-title"><h2>Environment</h2><span class="section-number">01</span></div>
+        <label class="field-label">Weather</label>
+        <div class="weather-options" role="group" aria-label="Weather conditions">
+          <button data-weather="clear" aria-pressed="true"><span>☀</span>Clear</button><button data-weather="rain" aria-pressed="false"><span>☂</span>Rain</button><button data-weather="fog" aria-pressed="false"><span>≋</span>Fog</button><button data-weather="snow" aria-pressed="false"><span>❄</span>Snow</button>
+        </div>
+        <div class="field-row"><label for="night">Night driving</label><input id="night" type="checkbox" role="switch"></div>
+        <div class="field-row"><label for="density">Traffic density</label><span id="density-label">Moderate</span></div>
+        <input type="range" id="density" min="1" max="9" value="5" aria-label="Traffic density">
+        <div class="range-labels"><span>Quiet streets</span><span>Rush hour</span></div>
+      </section>
+      <section class="events-section">
+        <div class="section-title"><h2>Put it to the test</h2><span class="section-number">02</span></div>
+        <div class="event-buttons"><button data-event="slow_car"><span>↗</span>Slow car ahead<b>+</b></button><button data-event="pedestrian"><span>♙</span>Pedestrian crossing<b>+</b></button><button data-event="barrier"><span>▧</span>Road obstruction<b>+</b></button><button data-event="ambulance"><span>✚</span>Emergency vehicle<b>+</b></button><button data-event="red"><span>◉</span>Hold next light red<b>+</b></button></div>
+      </section>
+      <section class="decision-section">
+        <div class="section-title"><h2>Inside Jev’s decisions</h2><span class="live-tag" id="inference-status">STANDBY</span></div>
+        <div class="decision-main"><span id="decision-icon">↗</span><div><strong id="decision">Ready when you are</strong><p id="attention">Start a drive to see real model decisions.</p></div></div>
+        <div id="probabilities" class="probabilities" aria-label="Jev speed choice probabilities"></div>
+        <div class="decision-meta"><span id="latency">— ms</span><span id="decisions">0 decisions</span><span id="tokens">0 tokens</span></div>
+        <details><summary>Live observation & response</summary><pre id="raw">No decisions yet.</pre></details>
+      </section>
+      <section class="safety-section">
+        <div class="field-row"><label for="shield">Emergency brake assist</label><input id="shield" type="checkbox" role="switch" checked></div>
+        <p>Physics-based protection. Every override is visible.</p>
+        <div class="stats"><div><strong id="interventions">0</strong><span>Interventions</span></div><div><strong id="violations">0</strong><span>Red lights run</span></div><div><strong id="collisions">0</strong><span>Collisions</span></div></div>
+      </section>
+      <section class="log-section"><div class="section-title"><h2>Drive log</h2><span id="elapsed">00:00</span></div><div id="log"><p class="empty">Your drive starts here.</p></div></section>
+      <footer class="panel-footer">POWERED BY <strong>Jev</strong><span>System One / TypeSafe</span></footer>
+    </aside>
+  </main>
+  <dialog id="about"><button id="close-about" class="icon-button" aria-label="Close information">×</button><div class="eyebrow">HOW IT WORKS</div><h2>A decision engine behind the wheel.</h2><p>Jev sees a structured snapshot of the road and chooses a target speed, a lane action, and an attention category. The browser converts those decisions into acceleration, braking, and steering.</p><p>Weather changes grip, braking distance, and visibility. The model sees nearby vehicles and pedestrians; traffic lights and road geometry are supplied as map information. Night reduces visibility further.</p><p>The optional emergency brake is deterministic and its interventions are counted separately. If inference becomes stale, the car brakes. API failures pause the drive. No scripted autopilot replaces Jev.</p><p>Jev chooses routes through a connected street grid, prepares a turn lane, and yields before following a curved turn. It can pass slower traffic and return right once clear. The map traces your actual route. Other traffic follows scripted rules; this is not a real-world autonomy benchmark. Live driving uses your configured TypeSafe API and incurs usage.</p><small>Space: start/pause · C: change camera · R: reset</small></dialog>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>
